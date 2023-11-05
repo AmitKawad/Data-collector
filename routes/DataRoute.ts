@@ -67,8 +67,54 @@ const getStockData = async function(request: Request, response: Response, next: 
         
     }
 }
+const PushStockDataYF = async function (request: Request, response: Response, next: NextFunction) {
+    try {
+        const result = await dataCollectorService.addHistoricDataToDBYF();
+        response.json({
+            success: true,
+            message: result
+        });
+    } catch (error: any) {
+        if (error instanceof Error) {
+            response.json({
+                success: false,
+                error: error.message
+            });
+        } else {
+            response.json({
+                success: false,
+                error: 'An unknown error occurred'
+            });
+        }
+    }
+};
+const pushDailyDataYF = async function(request: Request, response: Response, next: NextFunction){
+    try {
+        const result = await dataCollectorService.addDailyDataToDBYF();
+        response.json({
+            success: true,
+            message: result
+        });
+    } catch (error: any) {
+        if (error instanceof Error) {
+            response.json({
+                success: false,
+                error: error.message
+            });
+        } else {
+            response.json({
+                success: false,
+                error: 'An unknown error occurred'
+            });
+        }
+    }
+}
+
+
 router.post('/addStockPrices', PushStockData);
 router.post('/UpdateDailyPrices', pushDailyData);
 router.get('/getStockData', getStockData);
+router.post('/addStockPricesYF', PushStockDataYF);
+router.post('/UpdateDailyPricesYF', pushDailyDataYF);
 
 export default router;

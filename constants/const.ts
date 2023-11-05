@@ -1,5 +1,5 @@
  const constants = {
-    stocksSymbols : ['RELIANCE.BSE','TITAN.BSE','TCS.BSE', 'ICICIBANK.BSE','HDFCBANK.BSE']
+    stocksSymbols : ['RELIANCE.BO','TITAN.BO','TCS.BO', 'ICICIBANK.BO','HDFCBANK.BO']
 
 }
 export{constants}

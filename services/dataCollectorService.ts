@@ -1,5 +1,7 @@
+import { response } from 'express';
 'use strict';
 const axios = require('axios');
+const yahooFinance = require('yahoo-finance');
 require('dotenv').config();
 const fs = require('fs');
 const { Op } = require('sequelize');
@@ -42,7 +44,7 @@ export class DataCollectorService {
                         recordsInserted++;
                     }
                 }
-                
+
             }
             return "Data added Successfully"
 
@@ -119,5 +121,83 @@ export class DataCollectorService {
         }
 
     }
+    addHistoricDataToDBYF = async function () {
+        try {
+            const stockDataArray: any = [];
+            for (const stock of constants.stocksSymbols) {
+                console.log(`Adding Historic Data to DB for ${stock}`)
+                //API call
+                const currentDate = new Date().toISOString().split('T')[0]
+                const response: any = await yahooFinance.historical({
+                    symbol: stock,
+                    from: '2015-01-01',
+                    to: currentDate,
+                    period: 'd'  // 'd' (daily), 'w' (weekly), 'm' (monthly), 'v' (dividends only)
+                });
+                stockDataArray.push(...response)
+            }
+            console.log(`Inserting ${stockDataArray.length} records into database`)
+            // Create instances of stockSchema outside the loop
+            for (const element of stockDataArray) {
+                const dataObj = {
+                    Symbol: element.symbol,
+                    date: element.date.toISOString().split('T')[0],
+                    open: element.open,
+                    high: element.high,
+                    low: element.low,
+                    close: element.close,
+                    volume: element.volume
+                }
+                console.log(dataObj)
+                const newStockData = new stockSchema(dataObj);
+                const insertResult = await newStockData.save();
+            }
+            return "Data added Successfully"
+
+        } catch (error) {
+            console.log("Error", error)
+            throw error;
+        }
+
+    }
+    addDailyDataToDBYF = async function () {
+        try {
+            const stockDataArray: any = [];
+            for (const stock of constants.stocksSymbols) {
+                console.log(`Adding Daily Data to DB for ${stock}`)
+                //API call
+                const currentDate = new Date().toISOString().split('T')[0]
+                const response: any = await yahooFinance.historical({
+                    symbol: stock,
+                    from: currentDate,
+                    to: currentDate,
+                    period: 'd'  // 'd' (daily), 'w' (weekly), 'm' (monthly), 'v' (dividends only)
+                });
+                stockDataArray.push(...response)
+            }
+            console.log(`Inserting ${stockDataArray.length} records into database`)
+            // Create instances of stockSchema outside the loop
+            for (const element of stockDataArray) {
+                const dataObj = {
+                    Symbol: element.symbol,
+                    date: element.date.toISOString().split('T')[0],
+                    open: element.open,
+                    high: element.high,
+                    low: element.low,
+                    close: element.close,
+                    volume: element.volume
+                }
+                console.log(dataObj)
+                const newStockData = new stockSchema(dataObj);
+                const insertResult = await newStockData.save();
+            }
+            return "Data added Successfully"
+        } catch (error) {
+            console.log("Error", error)
+            throw error;
+        }
+    }
+
+
 
 }
